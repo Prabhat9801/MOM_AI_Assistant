@@ -72,6 +72,29 @@ class NotificationService:
         await db.flush()
 
     @staticmethod
+    async def notify_meeting_invitation(db: AsyncSession, email: str, user_name: str, meeting_title: str, date: str, time: str, venue: str):
+        if email:
+            await EmailService.send_meeting_invitation(email, user_name, meeting_title, date, time, venue)
+            db.add(Notification(
+                recipient_email=email,
+                message=f"Invited to meeting: {meeting_title} on {date}",
+                notification_type=NotificationType.EMAIL,
+            ))
+            await db.flush()
+
+    @staticmethod
+    async def notify_meeting_summary(db: AsyncSession, email: str, user_name: str, meeting_title: str, is_absent: bool, summary: str, task_html: str, pdf_data: bytes = None, pdf_name: str = None):
+        if email:
+            await EmailService.send_meeting_summary(email, user_name, meeting_title, is_absent, summary, task_html, pdf_data=pdf_data, pdf_name=pdf_name)
+            db.add(Notification(
+                recipient_email=email,
+                message=f"Received MOM for meeting: {meeting_title}",
+                notification_type=NotificationType.EMAIL,
+            ))
+            await db.flush()
+
+
+    @staticmethod
     async def list_notifications(db: AsyncSession, skip: int = 0, limit: int = 50) -> list[Notification]:
         from sqlalchemy import select
         result = await db.execute(

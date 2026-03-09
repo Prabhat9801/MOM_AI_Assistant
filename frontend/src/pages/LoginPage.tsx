@@ -41,11 +41,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-primary-600 flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">
-            M
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">MOM AI Assistant</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Sign in to your account</p>
+          <img src="/botivate-logo.png" alt="Botivate" className="w-16 h-16 object-contain mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Botivate</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">MOM Management System</p>
         </div>
         <form
           onSubmit={handleSubmit}

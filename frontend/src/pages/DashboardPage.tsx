@@ -5,7 +5,6 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ClockIcon,
-  UsersIcon,
 } from '@heroicons/react/24/outline';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -18,7 +17,7 @@ import StatCard from '../components/StatCard';
 import StatusBadge from '../components/StatusBadge';
 import { Link } from 'react-router-dom';
 
-const PIE_COLORS = ['#facc15', '#3b82f6', '#22c55e'];
+const PIE_COLORS = ['#1d6bf8', '#f59e0b', '#22c55e'];
 
 export default function DashboardPage() {
   const { data, isLoading } = useQuery<AnalyticsData>({
@@ -27,93 +26,180 @@ export default function DashboardPage() {
   });
 
   if (isLoading || !data) {
-    return <div className="flex items-center justify-center h-64 text-gray-400">Loading dashboard...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-slate-400">Loading dashboard…</p>
+      </div>
+    );
   }
 
-  const { stats, task_distribution, meeting_trends, recent_meetings, overdue_tasks } = data;
+  const { stats, task_distribution, meeting_trends, recent_meetings, overdue_tasks, nearest_upcoming_meeting, last_meeting } = data;
 
   return (
-    <div className="space-y-6">
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Meetings" value={stats.total_meetings} color="bg-blue-500" icon={<CalendarDaysIcon className="w-6 h-6" />} />
-        <StatCard title="Pending Tasks" value={stats.pending_tasks} color="bg-yellow-500" icon={<ClockIcon className="w-6 h-6" />} />
-        <StatCard title="Completed Tasks" value={stats.completed_tasks} color="bg-green-500" icon={<CheckCircleIcon className="w-6 h-6" />} />
-        <StatCard title="Overdue Tasks" value={stats.overdue_tasks} color="bg-red-500" icon={<ExclamationTriangleIcon className="w-6 h-6" />} />
+    <div className="space-y-6 max-w-[1400px] mx-auto">
+
+      {/* ── Hero Row ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+
+        {/* Next Meeting – wider */}
+        <div className="lg:col-span-3 relative rounded-2xl overflow-hidden shadow-xl shadow-blue-100 dark:shadow-blue-900/30">
+          {/* Gradient bg */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1d6bf8] via-[#1558d6] to-[#0f3fa5]" />
+          {/* Decorative circles */}
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/5 rounded-full" />
+          <div className="absolute bottom-0 left-24 w-32 h-32 bg-white/5 rounded-full" />
+
+          <div className="relative z-10 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider bg-white/15 text-indigo-100 px-3 py-1 rounded-full">
+                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                Next Scheduled Meeting
+              </span>
+            </div>
+
+            {nearest_upcoming_meeting ? (
+              <>
+                <h3 className="text-2xl font-extrabold text-white leading-tight mb-3">{nearest_upcoming_meeting.title}</h3>
+                <div className="flex flex-wrap gap-4 text-indigo-100 text-sm mb-5">
+                  <span className="flex items-center gap-1.5">
+                    <CalendarDaysIcon className="w-4 h-4 text-indigo-300" />
+                    {nearest_upcoming_meeting.date || 'TBD'} &nbsp;·&nbsp; {nearest_upcoming_meeting.time || 'TBD'}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <ClockIcon className="w-4 h-4 text-indigo-300" />
+                    {nearest_upcoming_meeting.venue || 'TBD'}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-4 h-4 text-indigo-300">👥</span>
+                    {nearest_upcoming_meeting.attendees?.length || 0} attendees
+                  </span>
+                </div>
+                <div className="flex gap-2.5">
+                  <Link to={`/meetings/${nearest_upcoming_meeting.id}`}
+                    className="px-4 py-2 text-[13px] font-semibold text-white rounded-xl bg-white/15 hover:bg-white/25 transition-colors backdrop-blur-sm">
+                    View Details
+                  </Link>
+                  <Link to={`/meetings/${nearest_upcoming_meeting.id}/log-mom`}
+                    className="px-4 py-2 text-[13px] font-bold text-[#1d6bf8] rounded-xl bg-white hover:bg-blue-50 transition-colors shadow-md">
+                    Record MOM
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <p className="text-indigo-200 text-sm mt-2">No upcoming meetings scheduled.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Last Meeting – narrower */}
+        <div className="lg:col-span-2 bg-white dark:bg-[#161b27] rounded-2xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Last Meeting</p>
+            {last_meeting ? (
+              <>
+                <Link to={`/meetings/${last_meeting.id}`} className="text-[17px] font-bold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors line-clamp-2 leading-snug">
+                  {last_meeting.title}
+                </Link>
+                <p className="text-xs text-slate-400 mt-1 mb-5">{last_meeting.date}</p>
+                <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-500/10 p-3 text-center">
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wide">Tasks Done</p>
+                    <p className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-300 mt-1">
+                      {last_meeting.tasks?.filter(t => t.status === 'Completed').length || 0}
+                      <span className="text-base font-semibold text-slate-400"> / {last_meeting.tasks?.length || 0}</span>
+                    </p>
+                  </div>
+          <div className="rounded-xl bg-blue-50 dark:bg-blue-500/10 p-3 text-center">
+                    <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wide">Attendance</p>
+                    <p className="text-2xl font-extrabold text-indigo-700 dark:text-indigo-300 mt-1">
+                      {last_meeting.attendees?.filter(a => a.attendance_status === 'Present').length || 0}
+                      <span className="text-base font-semibold text-slate-400"> / {last_meeting.attendees?.length || 0}</span>
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-slate-400 text-sm">No past meetings found.</p>
+            )}
+          </div>
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <Link to="/meetings" className="text-[12px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+              View all meetings →
+            </Link>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Tasks" value={stats.total_tasks} color="bg-indigo-500" icon={<ClipboardDocumentListIcon className="w-6 h-6" />} />
-        <StatCard title="In Progress" value={stats.in_progress_tasks} color="bg-blue-400" icon={<ClockIcon className="w-6 h-6" />} />
-        <StatCard title="Upcoming Meetings" value={stats.upcoming_meetings} color="bg-purple-500" icon={<CalendarDaysIcon className="w-6 h-6" />} />
-        <StatCard title="Total Users" value={stats.total_users} color="bg-teal-500" icon={<UsersIcon className="w-6 h-6" />} />
+      {/* ── Stats Grid ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
+        <StatCard title="Total Meetings"   value={stats.total_meetings}     color="blue"   icon={<CalendarDaysIcon className="w-5 h-5" />} />
+        <StatCard title="Total Tasks"      value={stats.total_tasks}        color="indigo" icon={<ClipboardDocumentListIcon className="w-5 h-5" />} />
+        <StatCard title="Pending"          value={stats.pending_tasks}      color="yellow" icon={<ClockIcon className="w-5 h-5" />} />
+        <StatCard title="In Progress"      value={stats.in_progress_tasks}  color="purple" icon={<ClockIcon className="w-5 h-5" />} />
+        <StatCard title="Completed"        value={stats.completed_tasks}    color="green"  icon={<CheckCircleIcon className="w-5 h-5" />} />
+        <StatCard title="Overdue"          value={stats.overdue_tasks}      color="red"    icon={<ExclamationTriangleIcon className="w-5 h-5" />} />
+        <StatCard title="Upcoming"         value={stats.upcoming_meetings}  color="indigo" icon={<CalendarDaysIcon className="w-5 h-5" />} />
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Meeting Trends */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Meeting Trends</h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={meeting_trends}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+      {/* ── Charts ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-white dark:bg-[#161b27] rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+          <p className="text-[13px] font-bold text-slate-800 dark:text-white mb-4">Meeting Trends</p>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={meeting_trends} barCategoryGap="40%">
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <Tooltip
+                contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 12 }}
+                cursor={{ fill: '#f1f5f9' }}
+              />
+              <Bar dataKey="count" fill="#1d6bf8" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Task Distribution */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Task Distribution</h2>
-          <ResponsiveContainer width="100%" height={280}>
+        <div className="bg-white dark:bg-[#161b27] rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+          <p className="text-[13px] font-bold text-slate-800 dark:text-white mb-4">Task Distribution</p>
+          <ResponsiveContainer width="100%" height={240}>
             <PieChart>
-              <Pie
-                data={task_distribution}
-                dataKey="count"
-                nameKey="status"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                label={({ status, count }) => `${status}: ${count}`}
-              >
+              <Pie data={task_distribution} dataKey="count" nameKey="status" cx="50%" cy="50%" outerRadius={90} innerRadius={45}
+                paddingAngle={3} strokeWidth={0}>
                 {task_distribution.map((_, idx) => (
                   <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
                 ))}
               </Pie>
-              <Legend />
-              <Tooltip />
+              <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{ fontSize: 11, color: '#94a3b8' }}>{v}</span>} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 12 }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Recent Meetings & Overdue Tasks */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── Bottom Tables ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
         {/* Recent Meetings */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Meetings</h2>
+        <div className="bg-white dark:bg-[#161b27] rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[13px] font-bold text-slate-800 dark:text-white">Recent Meetings</p>
+            <Link to="/meetings" className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-700 transition-colors">View all →</Link>
+          </div>
           {recent_meetings.length === 0 ? (
-            <p className="text-gray-400 text-sm">No meetings yet.</p>
+            <p className="text-slate-400 text-sm">No meetings yet.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               {recent_meetings.map((m) => (
-                <Link
-                  key={m.id}
-                  to={`/meetings/${m.id}`}
-                  className="block p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{m.title}</p>
-                      <p className="text-xs text-gray-500">{m.date || 'No date'} &middot; {m.venue || 'N/A'}</p>
-                    </div>
-                    <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">
-                      {m.task_count} tasks
-                    </span>
+                <Link key={m.id} to={`/meetings/${m.id}`}
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+                  <div>
+                    <p className="text-[13px] font-semibold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{m.title}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{m.date || 'No date'} · {m.venue || 'N/A'}</p>
                   </div>
+                  <span className="text-[11px] font-semibold bg-blue-50 dark:bg-blue-500/15 text-[#1d6bf8] dark:text-blue-400 px-2.5 py-1 rounded-lg shrink-0">
+                    {m.task_count} tasks
+                  </span>
                 </Link>
               ))}
             </div>
@@ -121,19 +207,24 @@ export default function DashboardPage() {
         </div>
 
         {/* Overdue Tasks */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Overdue Tasks</h2>
+        <div className="bg-white dark:bg-[#161b27] rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+          <p className="text-[13px] font-bold text-slate-800 dark:text-white mb-4">Overdue Tasks</p>
           {overdue_tasks.length === 0 ? (
-            <p className="text-gray-400 text-sm">No overdue tasks.</p>
+            <div className="flex flex-col items-center justify-center py-8 gap-2">
+              <CheckCircleIcon className="w-8 h-8 text-emerald-400" />
+              <p className="text-sm text-slate-400">No overdue tasks. 🎉</p>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {overdue_tasks.map((t) => (
-                <div key={t.id} className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                  <p className="font-medium text-gray-900 dark:text-white">{t.title}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Assigned to: {t.responsible_person || 'Unassigned'} &middot; Due: {t.deadline}
+                <div key={t.id} className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-[13px] font-semibold text-slate-800 dark:text-white">{t.title}</p>
+                    <StatusBadge status={t.status} />
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    {t.responsible_person || 'Unassigned'} · Due: {t.deadline}
                   </p>
-                  <StatusBadge status={t.status} />
                 </div>
               ))}
             </div>

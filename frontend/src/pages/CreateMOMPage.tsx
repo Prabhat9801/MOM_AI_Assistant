@@ -59,7 +59,7 @@ export default function CreateMOMPage() {
       ...p,
       tasks: [
         ...p.tasks,
-        { title: '', description: '', responsible_person: '', responsible_email: '', deadline: '', status: 'Pending' as TaskStatus },
+        { title: '', description: '', responsible_person: '', responsible_email: '', deadline: '', status: 'Pending' as TaskStatus, _manualMode: false } as any,
       ],
     }));
   const removeTask = (i: number) =>
@@ -234,10 +234,56 @@ export default function CreateMOMPage() {
             </button>
           </div>
           {form.tasks.map((t, i) => (
-            <div key={i} className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-3 items-end">
+            <div key={i} className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-3 items-start bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
               <input placeholder="Task title" value={t.title} onChange={(e) => updateTask(i, 'title', e.target.value)} className={inputClass} />
-              <input placeholder="Responsible" value={t.responsible_person || ''} onChange={(e) => updateTask(i, 'responsible_person', e.target.value)} className={inputClass} />
-              <input placeholder="Email" value={t.responsible_email || ''} onChange={(e) => updateTask(i, 'responsible_email', e.target.value)} className={inputClass} />
+              
+              <div className="md:col-span-2 flex flex-col gap-2">
+                <select
+                  value={(t as any)._manualMode ? '__OTHER__' : (t.responsible_person || '')}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '__OTHER__') {
+                      setForm(p => {
+                        const newTasks = [...p.tasks];
+                        (newTasks[i] as any)._manualMode = true;
+                        newTasks[i].responsible_person = '';
+                        newTasks[i].responsible_email = '';
+                        return { ...p, tasks: newTasks };
+                      });
+                    } else if (val) {
+                      const a = form.attendees.find(x => x.user_name === val);
+                      setForm(p => {
+                        const newTasks = [...p.tasks];
+                        (newTasks[i] as any)._manualMode = false;
+                        newTasks[i].responsible_person = a?.user_name || '';
+                        newTasks[i].responsible_email = a?.email || '';
+                        return { ...p, tasks: newTasks };
+                      });
+                    } else {
+                      setForm(p => {
+                        const newTasks = [...p.tasks];
+                        (newTasks[i] as any)._manualMode = false;
+                        newTasks[i].responsible_person = '';
+                        newTasks[i].responsible_email = '';
+                        return { ...p, tasks: newTasks };
+                      });
+                    }
+                  }}
+                  className={inputClass}
+                >
+                  <option value="">-- Select Assignee --</option>
+                  {form.attendees.map((a, aIdx) => (a.user_name ? <option key={aIdx} value={a.user_name}>{a.user_name} {a.email ? `(${a.email})` : ''}</option> : null))}
+                  <option value="__OTHER__">Other / Manual</option>
+                </select>
+                
+                {(t as any)._manualMode && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <input placeholder="Name" value={t.responsible_person || ''} onChange={(e) => updateTask(i, 'responsible_person', e.target.value)} className={inputClass} />
+                    <input placeholder="Email" value={t.responsible_email || ''} onChange={(e) => updateTask(i, 'responsible_email', e.target.value)} className={inputClass} />
+                  </div>
+                )}
+              </div>
+
               <input type="date" value={t.deadline || ''} onChange={(e) => updateTask(i, 'deadline', e.target.value)} className={inputClass} />
               <select value={t.status} onChange={(e) => updateTask(i, 'status', e.target.value)} className={inputClass}>
                 <option value="Pending">Pending</option>

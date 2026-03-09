@@ -1,6 +1,6 @@
 """Dashboard / analytics service."""
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from sqlalchemy import select, func, extract
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.models import Meeting, Task, TaskStatus, User
 from app.schemas.schemas import (
     DashboardStats, TaskStatusDistribution, MeetingTrend,
-    MeetingListResponse, TaskResponse, AnalyticsResponse,
+    MeetingListResponse, TaskResponse, AnalyticsResponse, MeetingResponse
 )
 from app.services.task_service import TaskService
 from app.services.meeting_service import MeetingService
@@ -69,6 +69,40 @@ class DashboardService:
             TaskResponse.model_validate(t) for t in overdue_list
         ]
 
+        # Latest past meeting and nearest upcoming meeting
+        last_meeting = None
+        nearest_upcoming = None
+        
+        # We can find this efficiently:
+        today_date = date.today()
+        time_now = datetime.now().time()
+        
+        # nearest upcoming
+        nearest_res = await db.execute(
+            select(Meeting)
+            .where((Meeting.date > today_date) | ((Meeting.date == today_date) & (Meeting.time >= time_now)))
+            .order_by(Meeting.date.asc(), Meeting.time.asc())
+            .limit(1)
+        )
+        nearest = nearest_res.scalar_one_or_none()
+        if nearest:
+            # Re-fetch with full associations
+            nearest = await MeetingService.get_meeting(db, nearest.id)
+            nearest_upcoming = MeetingResponse.model_validate(nearest)
+
+        # last meeting
+        last_res = await db.execute(
+            select(Meeting)
+            .where((Meeting.date < today_date) | ((Meeting.date == today_date) & (Meeting.time < time_now)))
+            .order_by(Meeting.date.desc(), Meeting.time.desc())
+            .limit(1)
+        )
+        last = last_res.scalar_one_or_none()
+        if last:
+            # Re-fetch with full associations
+            last = await MeetingService.get_meeting(db, last.id)
+            last_meeting = MeetingResponse.model_validate(last)
+
         return AnalyticsResponse(
             stats=DashboardStats(
                 total_meetings=total_meetings,
@@ -84,4 +118,6 @@ class DashboardService:
             meeting_trends=trends,
             recent_meetings=recent_resp,
             overdue_tasks=overdue_resp,
+            nearest_upcoming_meeting=nearest_upcoming,
+            last_meeting=last_meeting,
         )

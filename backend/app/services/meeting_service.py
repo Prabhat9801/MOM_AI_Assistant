@@ -11,7 +11,7 @@ from app.models.models import (
     Meeting, Attendee, AgendaItem, DiscussionSummary,
     Task, NextMeeting, File, TaskStatus, AttendanceStatus,
 )
-from app.schemas.schemas import MeetingCreate, ExtractedMOM
+from app.schemas.schemas import MeetingCreate, ExtractedMOM, MeetingMOMUpdate
 
 
 class MeetingService:
@@ -190,6 +190,54 @@ class MeetingService:
             .where(Meeting.id == meeting_id)
         )
         return result.scalar_one_or_none()
+
+    @staticmethod
+    async def add_mom_to_meeting(db: AsyncSession, meeting_id: int, data: MeetingMOMUpdate) -> Meeting | None:
+        meeting = await MeetingService.get_meeting(db, meeting_id)
+        if not meeting:
+            return None
+
+        # Update Attendees Statuses
+        attendee_dict = {a.id: a for a in meeting.attendees}
+        for update_a in data.attendees:
+            if update_a.id in attendee_dict:
+                attendee_dict[update_a.id].attendance_status = update_a.attendance_status
+
+        # Add/Update Discussion
+        if data.discussion_summary:
+            if meeting.discussion:
+                meeting.discussion.summary_text = data.discussion_summary
+            else:
+                db.add(DiscussionSummary(meeting_id=meeting.id, summary_text=data.discussion_summary))
+
+        # Tasks
+        for t in data.tasks:
+            db.add(Task(
+                meeting_id=meeting.id,
+                title=t.title,
+                description=t.description,
+                responsible_person=t.responsible_person,
+                responsible_email=t.responsible_email,
+                deadline=t.deadline,
+                status=t.status,
+            ))
+
+        # Next meeting
+        if data.next_meeting:
+            if meeting.next_meeting:
+                meeting.next_meeting.next_date = data.next_meeting.next_date
+                meeting.next_meeting.next_time = data.next_meeting.next_time
+            else:
+                db.add(NextMeeting(
+                    meeting_id=meeting.id,
+                    next_date=data.next_meeting.next_date,
+                    next_time=data.next_meeting.next_time,
+                ))
+
+        await db.flush()
+        await db.refresh(meeting)
+        return await MeetingService.get_meeting(db, meeting_id)
+
 
     @staticmethod
     async def list_meetings(db: AsyncSession, skip: int = 0, limit: int = 50) -> list[Meeting]:

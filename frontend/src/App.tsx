@@ -6,8 +6,11 @@ import Layout from './components/Layout';
 import DashboardPage from './pages/DashboardPage';
 import MeetingsPage from './pages/MeetingsPage';
 import MeetingDetailPage from './pages/MeetingDetailPage';
+import ScheduleMeetingPage from './pages/ScheduleMeetingPage';
+import LogMOMPage from './pages/LogMOMPage';
 import UploadMOMPage from './pages/UploadMOMPage';
 import CreateMOMPage from './pages/CreateMOMPage';
+
 import TasksPage from './pages/TasksPage';
 import AttendancePage from './pages/AttendancePage';
 import UsersPage from './pages/UsersPage';
@@ -30,6 +33,8 @@ export default function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/meetings" element={<MeetingsPage />} />
               <Route path="/meetings/:id" element={<MeetingDetailPage />} />
+              <Route path="/meetings/:id/log-mom" element={<LogMOMPage />} />
+              <Route path="/schedule-meeting" element={<ScheduleMeetingPage />} />
               <Route path="/upload" element={<UploadMOMPage />} />
               <Route path="/create-mom" element={<CreateMOMPage />} />
               <Route path="/tasks" element={<TasksPage />} />

@@ -1,66 +1,161 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import {
+  TrashIcon,
+  CalendarDaysIcon,
+  MapPinIcon,
+  ClipboardDocumentListIcon,
+  BuildingOfficeIcon,
+  ArrowRightIcon,
+  PlusIcon,
+  ArrowUpTrayIcon,
+} from '@heroicons/react/24/outline';
 import api from '../api';
 import type { MeetingListItem } from '../types';
 
 export default function MeetingsPage() {
+  const queryClient = useQueryClient();
+
   const { data: meetings = [], isLoading } = useQuery<MeetingListItem[]>({
     queryKey: ['meetings'],
     queryFn: async () => (await api.get('/meetings/')).data,
   });
 
+  const handleDelete = async (id: number, title: string) => {
+    if (!window.confirm(`Delete meeting "${title}"?\nThis action cannot be undone.`)) return;
+    try {
+      await api.delete(`/meetings/${id}`);
+      toast.success('Meeting deleted');
+      queryClient.invalidateQueries({ queryKey: ['meetings'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    } catch {
+      toast.error('Failed to delete meeting');
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">All Meetings</h2>
-        <div className="flex gap-2">
-          <Link to="/upload" className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700 transition">
+    <div className="space-y-5 max-w-[1200px] mx-auto">
+
+      {/* ── Page Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">All Meetings</h2>
+          <p className="text-sm text-slate-400 mt-0.5">{meetings.length} meeting{meetings.length !== 1 ? 's' : ''} found</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to="/upload"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold rounded-xl bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+          >
+            <ArrowUpTrayIcon className="w-4 h-4" />
             Upload MOM
           </Link>
-          <Link to="/create-mom" className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition">
+          <Link
+            to="/schedule-meeting"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all border border-indigo-100 dark:border-indigo-500/20"
+          >
+            <CalendarDaysIcon className="w-4 h-4" />
+            Schedule Meeting
+          </Link>
+          <Link
+            to="/create-mom"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200 dark:shadow-indigo-900/40 transition-all active:scale-[0.98]"
+          >
+            <PlusIcon className="w-4 h-4" />
             Create MOM
           </Link>
         </div>
       </div>
 
+      {/* ── Content ── */}
       {isLoading ? (
-        <div className="text-gray-400 text-center py-12">Loading meetings...</div>
+        <div className="flex flex-col items-center justify-center h-52 gap-3">
+          <div className="w-7 h-7 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-400">Loading meetings…</p>
+        </div>
       ) : meetings.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">No meetings found. Upload or create one.</div>
+        <div className="flex flex-col items-center justify-center h-52 gap-3 bg-white dark:bg-[#161b27] rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+          <CalendarDaysIcon className="w-10 h-10 text-slate-300 dark:text-slate-600" />
+          <p className="text-sm font-medium text-slate-400">No meetings found. Upload or create one.</p>
+        </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 uppercase text-xs">
-              <tr>
-                <th className="px-6 py-3">Title</th>
-                <th className="px-6 py-3">Organization</th>
-                <th className="px-6 py-3">Date</th>
-                <th className="px-6 py-3">Venue</th>
-                <th className="px-6 py-3">Tasks</th>
-                <th className="px-6 py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {meetings.map((m) => (
-                <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{m.title}</td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{m.organization || '—'}</td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{m.date || '—'}</td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{m.venue || '—'}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
-                      {m.task_count}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Link to={`/meetings/${m.id}`} className="text-primary-600 hover:underline text-sm">
-                      View
+        <div className="grid grid-cols-1 gap-3">
+          {meetings.map((m) => (
+            <div
+              key={m.id}
+              className="group bg-white dark:bg-[#161b27] rounded-2xl border border-slate-100 dark:border-slate-800 px-5 py-4 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all duration-200"
+            >
+              <div className="flex items-start justify-between gap-4">
+
+                {/* Left – Info */}
+                <div className="flex items-start gap-4 min-w-0">
+                  {/* Colour avatar */}
+                  <div className="w-11 h-11 rounded-xl bg-indigo-100 dark:bg-indigo-500/15 flex items-center justify-center shrink-0">
+                    <CalendarDaysIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+
+                  {/* Text */}
+                  <div className="min-w-0">
+                    <Link
+                      to={`/meetings/${m.id}`}
+                      className="text-[15px] font-bold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors line-clamp-1"
+                    >
+                      {m.title}
                     </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+                    {/* Meta row */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
+                      {m.organization && (
+                        <span className="flex items-center gap-1 text-[12px] text-slate-500 dark:text-slate-400">
+                          <BuildingOfficeIcon className="w-3.5 h-3.5 shrink-0" />
+                          {m.organization}
+                        </span>
+                      )}
+                      {m.date && (
+                        <span className="flex items-center gap-1 text-[12px] text-slate-500 dark:text-slate-400">
+                          <CalendarDaysIcon className="w-3.5 h-3.5 shrink-0" />
+                          {m.date}
+                        </span>
+                      )}
+                      {m.venue && (
+                        <span className="flex items-center gap-1 text-[12px] text-slate-500 dark:text-slate-400">
+                          <MapPinIcon className="w-3.5 h-3.5 shrink-0" />
+                          {m.venue}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right – Badges + Actions */}
+                <div className="flex items-center gap-3 shrink-0">
+                  {/* Task badge */}
+                  <span className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-semibold bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 px-3 py-1.5 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
+                    <ClipboardDocumentListIcon className="w-3.5 h-3.5" />
+                    {m.task_count} {m.task_count === 1 ? 'task' : 'tasks'}
+                  </span>
+
+                  {/* View button */}
+                  <Link
+                    to={`/meetings/${m.id}`}
+                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
+                  >
+                    View <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+
+                  {/* Delete */}
+                  <button
+                    onClick={() => handleDelete(m.id, m.title)}
+                    className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 transition-all"
+                    title="Delete meeting"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

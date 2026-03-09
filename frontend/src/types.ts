@@ -130,6 +130,8 @@ export interface AnalyticsData {
   meeting_trends: MeetingTrend[];
   recent_meetings: MeetingListItem[];
   overdue_tasks: Task[];
+  nearest_upcoming_meeting?: Meeting;
+  last_meeting?: Meeting;
 }
 
 export interface LoginPayload {
@@ -156,6 +158,25 @@ export interface MeetingFormData {
   prepared_by?: string;
   attendees: { user_name: string; email?: string; attendance_status: AttendanceStatus }[];
   agenda_items: { topic: string; description?: string }[];
+  discussion_summary?: string;
+  tasks: {
+    title: string;
+    description?: string;
+    responsible_person?: string;
+    responsible_email?: string;
+    deadline?: string;
+    status: TaskStatus;
+  }[];
+  next_meeting?: { next_date?: string; next_time?: string };
+}
+
+export interface AttendeeStatusUpdate {
+  id: number;
+  attendance_status: AttendanceStatus;
+}
+
+export interface MeetingMOMUpdatePayload {
+  attendees: AttendeeStatusUpdate[];
   discussion_summary?: string;
   tasks: {
     title: string;

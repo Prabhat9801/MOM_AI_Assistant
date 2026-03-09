@@ -62,6 +62,11 @@ class AttendeeCreate(BaseModel):
     attendance_status: AttendanceStatus = AttendanceStatus.PRESENT
 
 
+class AttendeeStatusUpdate(BaseModel):
+    id: int
+    attendance_status: AttendanceStatus
+
+
 class AttendeeResponse(BaseModel):
     id: int
     meeting_id: int
@@ -189,6 +194,13 @@ class MeetingCreate(BaseModel):
     next_meeting: Optional[NextMeetingCreate] = None
 
 
+class MeetingMOMUpdate(BaseModel):
+    attendees: list[AttendeeStatusUpdate] = []
+    discussion_summary: Optional[str] = None
+    tasks: list[TaskCreate] = []
+    next_meeting: Optional[NextMeetingCreate] = None
+
+
 
 class MeetingResponse(BaseModel):
     id: int
@@ -283,6 +295,8 @@ class AnalyticsResponse(BaseModel):
     meeting_trends: list[MeetingTrend]
     recent_meetings: list[MeetingListResponse]
     overdue_tasks: list[TaskResponse]
+    nearest_upcoming_meeting: Optional[MeetingResponse] = None
+    last_meeting: Optional[MeetingResponse] = None
 
 
 # ── AI Extraction Schemas ──────────────────────────────────────────────
