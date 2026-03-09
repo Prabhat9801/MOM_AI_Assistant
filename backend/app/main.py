@@ -72,3 +72,5 @@ app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "app": settings.APP_NAME}
+
+

@@ -365,7 +365,6 @@ async def list_meetings(
 ):
     """List meetings."""
     meetings = await MeetingService.list_meetings(db, skip=skip, limit=limit)
-    # Ensure tasks are loaded and count is correct
     return [
         MeetingListResponse(
             id=m.id,
@@ -375,6 +374,11 @@ async def list_meetings(
             venue=m.venue,
             created_at=m.created_at,
             task_count=len(m.tasks) if hasattr(m, 'tasks') and m.tasks is not None else 0,
+            is_board_resolution=m.is_board_resolution or False,
+            resolution_number=m.resolution_number,
+            resolution_status=m.resolution_status,
+            proposer=m.proposer,
+            seconder=m.seconder,
         )
         for m in meetings
     ]
@@ -398,3 +402,103 @@ async def delete_meeting(
     if not deleted:
         raise HTTPException(status_code=404, detail="Meeting not found")
     return {"detail": "Meeting deleted"}
+
+
+# ── BR Document Endpoints ──────────────────────────────────────────────
+
+from fastapi import UploadFile, File as FastAPIFile
+from app.models.models import BRDocument
+from app.schemas.schemas import BRDocumentResponse
+import shutil
+import pathlib
+
+BR_UPLOAD_DIR = pathlib.Path("uploads/br_documents")
+BR_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+@router.post("/{meeting_id}/documents", response_model=BRDocumentResponse)
+async def upload_br_document(
+    meeting_id: int,
+    file: UploadFile = FastAPIFile(...),
+    db: AsyncSession = Depends(get_db),
+):
+    """Upload a supporting document for a Board Resolution."""
+    meeting = await MeetingService.get_meeting(db, meeting_id)
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    # Save file
+    safe_name = f"{meeting_id}_{file.filename}"
+    file_path = BR_UPLOAD_DIR / safe_name
+    with open(file_path, "wb") as f:
+        content = await file.read()
+        f.write(content)
+
+    doc = BRDocument(
+        meeting_id=meeting_id,
+        file_name=file.filename or "document",
+        file_path=str(file_path),
+        file_size=len(content),
+        file_type=file.content_type or "application/octet-stream",
+    )
+    db.add(doc)
+    await db.commit()
+    await db.refresh(doc)
+    return doc
+
+
+@router.get("/{meeting_id}/documents", response_model=list[BRDocumentResponse])
+async def list_br_documents(
+    meeting_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """List all documents for a Board Resolution."""
+    from sqlalchemy import select
+    result = await db.execute(select(BRDocument).where(BRDocument.meeting_id == meeting_id))
+    return result.scalars().all()
+
+
+@router.get("/{meeting_id}/documents/{doc_id}/download")
+async def download_br_document(
+    meeting_id: int,
+    doc_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Download a BR document."""
+    from sqlalchemy import select
+    result = await db.execute(select(BRDocument).where(BRDocument.id == doc_id, BRDocument.meeting_id == meeting_id))
+    doc = result.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    file_path = pathlib.Path(doc.file_path)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File missing from server")
+
+    return StreamingResponse(
+        open(file_path, "rb"),
+        media_type=doc.file_type or "application/octet-stream",
+        headers={"Content-Disposition": f"attachment; filename={doc.file_name}"},
+    )
+
+
+@router.delete("/{meeting_id}/documents/{doc_id}")
+async def delete_br_document(
+    meeting_id: int,
+    doc_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete a BR document."""
+    from sqlalchemy import select
+    result = await db.execute(select(BRDocument).where(BRDocument.id == doc_id, BRDocument.meeting_id == meeting_id))
+    doc = result.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    file_path = pathlib.Path(doc.file_path)
+    if file_path.exists():
+        file_path.unlink()
+
+    await db.delete(doc)
+    await db.commit()
+    return {"detail": "Document deleted"}
+

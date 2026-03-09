@@ -88,8 +88,7 @@ export default function MeetingDetailPage() {
     { icon: <CalendarDaysIcon className="w-4 h-4" />, label: 'Date', value: meeting.date },
     { icon: <ClockIcon className="w-4 h-4" />, label: 'Time', value: meeting.time },
     { icon: <MapPinIcon className="w-4 h-4" />, label: 'Venue', value: meeting.venue },
-    { icon: <UserIcon className="w-4 h-4" />, label: 'Called By', value: meeting.called_by },
-    { icon: <UserIcon className="w-4 h-4" />, label: 'Prepared By', value: meeting.prepared_by },
+    { icon: <UserIcon className="w-4 h-4" />, label: 'Hosted By', value: meeting.called_by },
   ];
 
   return (
@@ -142,6 +141,16 @@ export default function MeetingDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Next Meeting (AT TOP) ── */}
+      {meeting.next_meeting && (
+        <Section title="Next Meeting" icon={<CalendarDaysIcon className="w-[18px] h-[18px]" />}>
+          <div className="flex items-center gap-6 text-[13px] text-slate-700 dark:text-slate-300">
+            <span className="flex items-center gap-2"><CalendarDaysIcon className="w-4 h-4 text-brand-500" />{meeting.next_meeting.next_date || 'TBD'}</span>
+            <span className="flex items-center gap-2"><ClockIcon className="w-4 h-4 text-brand-500" />{meeting.next_meeting.next_time || 'TBD'}</span>
+          </div>
+        </Section>
+      )}
 
       {/* ── Attendees ── */}
       <Section title="Attendees" icon={<UserIcon className="w-4.5 h-4.5 w-[18px] h-[18px]" />}>
@@ -227,15 +236,7 @@ export default function MeetingDetailPage() {
         )}
       </Section>
 
-      {/* ── Next Meeting ── */}
-      {meeting.next_meeting && (
-        <Section title="Next Meeting" icon={<CalendarDaysIcon className="w-[18px] h-[18px]" />}>
-          <div className="flex items-center gap-6 text-[13px] text-slate-700 dark:text-slate-300">
-            <span className="flex items-center gap-2"><CalendarDaysIcon className="w-4 h-4 text-brand-500" />{meeting.next_meeting.next_date || 'TBD'}</span>
-            <span className="flex items-center gap-2"><ClockIcon className="w-4 h-4 text-brand-500" />{meeting.next_meeting.next_time || 'TBD'}</span>
-          </div>
-        </Section>
-      )}
+
     </div>
   );
 }

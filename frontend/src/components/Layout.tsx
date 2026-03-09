@@ -3,6 +3,7 @@ import { useThemeStore } from '../store';
 import {
   HomeIcon,
   CalendarDaysIcon,
+  BuildingLibraryIcon,
   BellIcon,
   SunIcon,
   MoonIcon,
@@ -11,6 +12,7 @@ import {
 const navItems = [
   { path: '/',         label: 'Dashboard', icon: HomeIcon },
   { path: '/meetings', label: 'Meetings',  icon: CalendarDaysIcon },
+  { path: '/board-resolutions', label: 'Board Resolutions', icon: BuildingLibraryIcon },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {

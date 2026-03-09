@@ -192,6 +192,16 @@ class MeetingCreate(BaseModel):
     discussion_summary: Optional[str] = None
     tasks: list[TaskCreate] = []
     next_meeting: Optional[NextMeetingCreate] = None
+    # Board Resolution fields
+    is_board_resolution: bool = False
+    resolution_type: Optional[str] = None
+    resolution_status: Optional[str] = None
+    resolution_text: Optional[str] = None
+    proposer: Optional[str] = None
+    seconder: Optional[str] = None
+    voting_for: Optional[int] = 0
+    voting_against: Optional[int] = 0
+    voting_abstain: Optional[int] = 0
 
 
 class MeetingMOMUpdate(BaseModel):
@@ -215,6 +225,18 @@ class MeetingResponse(BaseModel):
     file_path: Optional[str]
     created_by: Optional[int]
     created_at: datetime
+    # BR fields
+    is_board_resolution: bool = False
+    resolution_number: Optional[str] = None
+    resolution_type: Optional[str] = None
+    resolution_status: Optional[str] = None
+    resolution_text: Optional[str] = None
+    proposer: Optional[str] = None
+    seconder: Optional[str] = None
+    voting_for: Optional[int] = 0
+    voting_against: Optional[int] = 0
+    voting_abstain: Optional[int] = 0
+    # Relations
     attendees: list[AttendeeResponse] = []
     agenda_items: list[AgendaItemResponse] = []
     discussion: Optional[DiscussionResponse] = None
@@ -233,6 +255,12 @@ class MeetingListResponse(BaseModel):
     venue: Optional[str]
     created_at: datetime
     task_count: int = 0
+    # BR fields for list view
+    is_board_resolution: bool = False
+    resolution_number: Optional[str] = None
+    resolution_status: Optional[str] = None
+    proposer: Optional[str] = None
+    seconder: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -265,6 +293,20 @@ class FileResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+# ── BR Document Schemas ──────────────────────────────────────────────────
+
+class BRDocumentResponse(BaseModel):
+    id: int
+    meeting_id: int
+    file_name: str
+    file_path: str
+    file_size: Optional[int]
+    file_type: Optional[str]
+    uploaded_at: datetime
+
+    class Config:
+        from_attributes = True
 
 # ── Dashboard / Analytics Schemas ──────────────────────────────────────
 
