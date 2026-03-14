@@ -191,7 +191,7 @@ export default function ScheduleMeetingPage() {
                 <input placeholder="WhatsApp Number" value={a.whatsapp_number || ''} onChange={(e) => updateAttendee(i, 'whatsapp_number', e.target.value)} className={inputClass} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <input placeholder="Remarks (Will NOT be sent in schedule email, but kept on record)" value={a.remarks || ''} onChange={(e) => updateAttendee(i, 'remarks', e.target.value)} className={`md:col-span-3 ${inputClass}`} />
+                <input placeholder="Remarks (Will be included in the schedule email)" value={a.remarks || ''} onChange={(e) => updateAttendee(i, 'remarks', e.target.value)} className={`md:col-span-3 ${inputClass}`} />
                 <button type="button" onClick={() => removeAttendee(i)} className="text-red-500 hover:text-red-700 justify-end text-sm flex items-center justify-center gap-1">
                   <TrashIcon className="w-4 h-4" /> Remove Attendee
                 </button>

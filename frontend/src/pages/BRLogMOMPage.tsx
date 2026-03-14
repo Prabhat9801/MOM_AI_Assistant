@@ -230,18 +230,12 @@ export default function BRLogMOMPage() {
                                         <option value="Absent">Absent</option>
                                         <option value="Excused">Excused</option>
                                     </select>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        <input 
-                                            placeholder="Unique ID" 
-                                            value={form.attendees[i]?.unique_id || ''} 
-                                            onChange={(e) => updateAttendee(i, 'unique_id', e.target.value)} 
-                                            className={`${inputClass} py-2`} 
-                                        />
+                                    <div className="flex gap-2">
                                         <input 
                                             placeholder="Confidential Remark" 
                                             value={form.attendees[i]?.remarks || ''} 
                                             onChange={(e) => updateAttendee(i, 'remarks', e.target.value)} 
-                                            className={`${inputClass} py-2`} 
+                                            className={`${inputClass} py-2 w-full`} 
                                         />
                                     </div>
                                 </div>

@@ -308,12 +308,6 @@ export default function BRMeetingsPage() {
                                     {/* View button */}
                                     <div className="flex items-center gap-2">
                                         <Link
-                                            to={`/tasks?meeting_id=${m.id}&source=BR`}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 text-[11px] font-bold text-slate-600 dark:text-slate-400 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-400 border border-slate-200 dark:border-slate-800 hover:border-brand-500/20 transition-all"
-                                        >
-                                            View Tasks
-                                        </Link>
-                                        <Link
                                             to={`/br/${m.id}`}
                                             className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 transition-colors"
                                         >
