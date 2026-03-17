@@ -61,7 +61,11 @@ export default function MeetingDetailPage() {
 
   const handleDownloadPDF = () => {
     if (!id) return;
-    window.open(`${window.location.origin}/api/v1/meetings/${id}/pdf`, '_blank');
+    const path = `/meetings/${id}/pdf`;
+    const fullUrl = api.defaults.baseURL?.startsWith('http') 
+      ? `${api.defaults.baseURL}${path}` 
+      : `${window.location.origin}${api.defaults.baseURL || '/api/v1'}${path}`;
+    window.open(fullUrl, '_blank');
   };
 
   const { data: meeting, isLoading } = useQuery<Meeting>({
