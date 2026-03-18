@@ -53,6 +53,7 @@ SHEET_SCHEMAS: dict[str, list[str]] = {
         "created_by", "created_at", "pdf_link", "drive_file_id",
         "drive_folder_id", "recording_link", "drive_recording_id",
         "drive_transcript_id", "ai_summary_link", "drive_logs_link", "status", "sent_to_cs",
+        "processing_stage", "processing_error",
     ],
     "Attendees": [
         "id", "meeting_id", "user_name", "email", "designation",
@@ -95,6 +96,7 @@ SHEET_SCHEMAS: dict[str, list[str]] = {
         "created_by", "created_at", "pdf_link", "drive_file_id",
         "drive_folder_id", "recording_link", "drive_recording_id",
         "drive_transcript_id", "ai_summary_link", "drive_logs_link", "status", "sent_to_cs",
+        "processing_stage", "processing_error",
     ],
     "BR_Directors": [
         "id", "meeting_id", "user_name", "email", "designation",

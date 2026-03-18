@@ -189,20 +189,22 @@ async def run_ai_pipeline(mid, mtype, path, title, mdate, mtime, folder_id, pare
         # 5. Update Sheet with Intelligence Asset Links (Mark as Processing)
         _update_stage(mid, mtype, "finalizing")
         logger.info(f"[STAGE 5/6] Syncing intelligence links and marking as Processing...")
-        update_data = {
+        # Update Meeting/BR Status
+        status_update = {
+            "status": "Completed",
+            "pdf_link": formatted_link, # Assuming formatted_link is the main PDF link
             "recording_link": recording_link,
-            "drive_transcript_id": transcript_link,
             "ai_summary_link": formatted_link,
             "drive_logs_link": logs_link,
-            "drive_folder_id": folder_id,
-            "status": "Processing"                 # <--- STAY IN PROCESSING UNTIL ADMIN SAVES MOM
+            "drive_transcript_id": transcript_link,
+            "drive_folder_id": folder_id, # Add folder ID to update
         }
-        if mtype == "BR":
-            SheetsDB.update_row("BR_Meetings", mid, update_data)
-        else:
-            SheetsDB.update_row("Meetings", mid, update_data)
 
-        # Stage 6: Populate Discussion Summary
+        sheet_name = "BR_Meetings" if mtype == "BR" else "Meetings"
+        SheetsDB.update_row(sheet_name, mid, status_update)
+        
+        # FINAL STAGE
+        _update_stage(mid, mtype, "completed") # Discussion Summary
         logger.info(f"[STAGE 6/6] Syncing intelligence assets...")
         
         # Dashboard Autofill: Use the point-wise brief summary
