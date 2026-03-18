@@ -45,14 +45,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Define allowed origins - prioritizing the FRONTEND_URL from .env
+origins = [
+    settings.FRONTEND_URL,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        settings.FRONTEND_URL,
-        "https://mom-ai-assistant.onrender.com",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173"
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -82,6 +84,7 @@ app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/")
+@app.head("/") # Explicitly allow HEAD requests for Render health checks
 async def root():
     return {"message": f"Welcome to {settings.APP_NAME} API. Visit /docs for documentation."}
 

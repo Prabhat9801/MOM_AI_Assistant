@@ -14,7 +14,7 @@ This guide provides the complete, step-by-step process for deploying the MOM AI 
 ## 📦 1. Preparing the Code for Deployment
 
 ### 1.1 Backend (`backend/app/main.py`)
-Ensure your CORS settings allow your future frontend URL. For now, you can use `*` to test, but it's better to update it later.
+CORS settings are now dynamic. The backend will automatically allow any URL you set in the **`FRONTEND_URL`** environment variable on Render. No code change is needed for new domains.
 
 ### 1.2 Frontend API Base URL
 Ensure your frontend uses an environment variable for the API URL. In `frontend/src/api/index.ts` (or wherever you initialize axios), it should look like:
@@ -77,17 +77,19 @@ const api = axios.create({
     *   Action: `Rewrite` (This ensures React Router works after refresh).
 6.  Click **Deploy Static Site**.
 
+> [!IMPORTANT]
+> **If you see "Not Found" on the frontend:**
+> Ensure you have added the **Redirects/Rewrites** rule (Source: `/*`, Destination: `/index.html`, Action: `Rewrite`) in the Render dashboard. This is required for React routing to work.
+
 ---
 
-## 🔗 4. Final Connection (CORS Update)
-
-Once your frontend is deployed (e.g., `https://mom-frontend.onrender.com`), you must tell the backend to allow requests from it.
+Once your frontend is deployed (e.g., `https://agentic-mom-system.onrender.com`), you must tell the backend to allow requests from it.
 
 1.  Go to your **Backend Service** on Render.
 2.  Go to **Environment Variables**.
 3.  Add/Update:
-    *   `FRONTEND_URL`: `https://mom-frontend.onrender.com`
-4.  The backend will automatically redeploy.
+    *   `FRONTEND_URL`: `https://agentic-mom-system.onrender.com` (Use YOUR actual frontend URL)
+4.  The backend will automatically redeploy and CORS errors will disappear.
 
 ---
 
