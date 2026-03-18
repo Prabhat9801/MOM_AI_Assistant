@@ -210,7 +210,7 @@ def _row_to_dict(headers: list[str], row: list[str]) -> dict[str, str]:
 
 import time as time_module
 
-_CACHE_TTL = 1  # Reduced to 1 second for responsive progress tracking
+_CACHE_TTL = 10  # Increased to 10 seconds to avoid Quota Exceeded (429) errors from Google Sheets API.
 _sheets_cache = {}
 
 def _get_sheet_values(sheet_name: str) -> list[list[str]]:
