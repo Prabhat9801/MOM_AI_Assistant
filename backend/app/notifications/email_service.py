@@ -84,7 +84,7 @@ class EmailService:
             return False
 
         message = MIMEMultipart("mixed")
-        message["From"] = settings.EMAIL_FROM
+        message["From"] = settings.EMAIL_FROM or settings.SMTP_USER
         message["To"] = to_email
         message["Subject"] = subject
         
