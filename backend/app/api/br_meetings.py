@@ -174,7 +174,7 @@ async def update_br_with_resolution(
                     meeting_title=br.title, is_absent=is_absent,
                     summary=br.discussion.summary_text if br.discussion else "",
                     task_html=task_html, pdf_data=pdf_bytes, pdf_name=pdf_name,
-                    is_br=True
+                    is_br=True, pdf_link=drive_result.get("webViewLink", "")
                 )
         
         # Notify task assignees
@@ -323,14 +323,14 @@ async def send_br_to_cs(br_id: int, data: SendCSRequest):
     # Generate current PDF
     pdf_bytes, pdf_filename = generate_meeting_pdf(br)
     
-    # Send via notification service
     await NotificationService.notify_cs_mom(
         None, 
         email=target_email, 
         meeting_title=br.title, 
         pdf_data=pdf_bytes, 
         pdf_name=pdf_filename,
-        is_br=True
+        is_br=True,
+        pdf_link=br.pdf_link
     )
     
     # Mark as sent in DB

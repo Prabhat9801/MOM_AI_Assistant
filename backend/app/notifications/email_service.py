@@ -270,7 +270,7 @@ class EmailService:
         await EmailService.send_email(to_email, subject, html)
 
     @staticmethod
-    async def send_meeting_summary(to_email: str, recipient_name: str, meeting_title: str, is_absent: bool, summary: str, task_html: str, pdf_data: Optional[bytes] = None, pdf_name: Optional[str] = None, is_br: bool = False):
+    async def send_meeting_summary(to_email: str, recipient_name: str, meeting_title: str, is_absent: bool, summary: str, task_html: str, pdf_data: Optional[bytes] = None, pdf_name: Optional[str] = None, is_br: bool = False, pdf_link: Optional[str] = None):
         subject = f"Official Resolution Wording & MOM: {meeting_title}" if is_br else f"MOM & Summary: {meeting_title}"
         
         if is_absent:
@@ -293,10 +293,18 @@ class EmailService:
         )
         
         attachment_notice = ""
-        if pdf_data:
+        if pdf_link:
+            attachment_notice = f"""
+            <div style="margin-top: 24px; padding: 16px; background-color: #f8fafc; border-left: 4px solid #3b82f6; border-radius: 4px;">
+                <p style="font-size: 14px; color: #1e293b; margin: 0 0 12px;"><strong>Attached Document:</strong> The officially signed/formatted PDF document is safely stored in the Drive repository.</p>
+                <a href="{pdf_link}" style="display: inline-block; padding: 10px 18px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px;">View / Download PDF</a>
+            </div>
+            """
+        elif pdf_data:
+            # Fallback for old behaviour though not directly attached via Script
             attachment_notice = """
             <div style="margin-top: 24px; padding: 16px; background-color: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 4px;">
-                <p style="font-size: 14px; color: #166534; margin: 0;"><strong>Attached:</strong> The officially signed/formatted PDF document is attached for Board repository purposes.</p>
+                <p style="font-size: 14px; color: #166534; margin: 0;"><strong>Attached:</strong> The officially signed/formatted PDF document was generated.</p>
             </div>
             """
 
@@ -318,7 +326,7 @@ class EmailService:
         await EmailService.send_email(to_email, subject, html, attachment_data=pdf_data, attachment_name=pdf_name)
 
     @staticmethod
-    async def send_cs_mom(to_email: str, meeting_title: str, pdf_data: bytes, pdf_name: str, is_br: bool = False):
+    async def send_cs_mom(to_email: str, meeting_title: str, pdf_data: bytes, pdf_name: str, is_br: bool = False, pdf_link: Optional[str] = None):
         """Specially formatted email for Company Secretary."""
         subject = f"GOVERNANCE COMPLIANCE: Finalized Resolution - {meeting_title}" if is_br else f"FOR RECORDS: Finalized MOM - {meeting_title}"
         target_entity = "Board of Directors" if is_br else "HR/Management Committee"
@@ -333,7 +341,11 @@ class EmailService:
                 <p style="font-size: 14px; color: #1e293b; margin: 0;"><strong>Source Entity:</strong> {target_entity}</p>
                 <p style="font-size: 14px; color: #1e293b; margin: 4px 0 0;"><strong>Submission Date:</strong> {datetime.now().strftime('%B %d, %Y')}</p>
             </div>
+            </div>
             <p style="font-size: 14px; color: #64748b; font-style: italic;">Note: This document is system-generated and has been verified by the meeting administrator.</p>
+            <div style="margin-top: 24px;">
+                <a href="{pdf_link}" style="display: inline-block; padding: 12px 24px; background-color: #1e293b; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">Secure PDF Access</a>
+            </div>
         """
         html = get_base_template("Governance Filing Submission", content, is_br=is_br)
         await EmailService.send_email(to_email, subject, html, attachment_data=pdf_data, attachment_name=pdf_name)

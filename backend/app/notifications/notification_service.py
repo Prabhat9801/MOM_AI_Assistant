@@ -117,9 +117,9 @@ class NotificationService:
             })
 
     @staticmethod
-    async def notify_meeting_summary(db, email: str, user_name: str, meeting_title: str, is_absent: bool, summary: str, task_html: str, pdf_data: Optional[bytes] = None, pdf_name: Optional[str] = None, is_br: bool = False):
+    async def notify_meeting_summary(db, email: str, user_name: str, meeting_title: str, is_absent: bool, summary: str, task_html: str, pdf_data: Optional[bytes] = None, pdf_name: Optional[str] = None, is_br: bool = False, pdf_link: Optional[str] = None):
         if email:
-            await EmailService.send_meeting_summary(email, user_name, meeting_title, is_absent, summary, task_html, pdf_data=pdf_data, pdf_name=pdf_name, is_br=is_br)
+            await EmailService.send_meeting_summary(email, user_name, meeting_title, is_absent, summary, task_html, pdf_data=pdf_data, pdf_name=pdf_name, is_br=is_br, pdf_link=pdf_link)
             SheetsDB.append_row("Notifications", {
                 "recipient_email": email,
                 "message": f"Received MOM/Resolution for: {meeting_title}",
@@ -144,10 +144,10 @@ class NotificationService:
         }) for n in sliced]
 
     @staticmethod
-    async def notify_cs_mom(db, email: str, meeting_title: str, pdf_data: bytes, pdf_name: str, is_br: bool = False):
+    async def notify_cs_mom(db, email: str, meeting_title: str, pdf_data: bytes, pdf_name: str, is_br: bool = False, pdf_link: Optional[str] = None):
         """Send notification to Company Secretary including the official PDF."""
         if email:
-            await EmailService.send_cs_mom(email, meeting_title, pdf_data, pdf_name, is_br=is_br)
+            await EmailService.send_cs_mom(email, meeting_title, pdf_data, pdf_name, is_br=is_br, pdf_link=pdf_link)
             SheetsDB.append_row("Notifications", {
                 "recipient_email": email,
                 "message": f"GOVERNANCE FILING: Submitted MOM/Resolution for {meeting_title}",

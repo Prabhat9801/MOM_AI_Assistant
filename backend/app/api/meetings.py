@@ -325,7 +325,8 @@ async def add_mom_to_meeting(meeting_id: int, data: MeetingMOMUpdate):
                 None, email=attendee.email, user_name=attendee.user_name,
                 meeting_title=meeting.title, is_absent=is_absent,
                 summary=meeting.discussion.summary_text if meeting.discussion else "",
-                task_html=task_html, pdf_data=pdf_data, pdf_name=pdf_name
+                task_html=task_html, pdf_data=pdf_data, pdf_name=pdf_name,
+                pdf_link=drive_result.get("webViewLink", "")
             )
 
     # Notify task assignees
