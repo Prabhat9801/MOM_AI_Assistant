@@ -60,9 +60,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
         <aside className={`absolute left-0 top-0 bottom-0 w-[280px] flex flex-col bg-white dark:bg-[#161b27] shadow-xl transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-3">
-              <img src="/botivate-logo-cropped.png" alt="Logo" className="w-[32px] h-[32px] object-contain" />
-              <span className="font-black text-slate-800 dark:text-white">Botivate</span>
+            <div className="flex items-center gap-3.5">
+              <img src="/botivate-logo-cropped.png" alt="Botivate Logo" className="w-[38px] h-[38px] object-contain drop-shadow-sm shrink-0" />
+              <div className="leading-tight mt-0.5">
+                <h1 className="text-[20px] font-black text-slate-800 dark:text-white tracking-tight -mb-1">Botivate</h1>
+                <p className="text-[9px] font-bold text-brand-500 uppercase tracking-widest mt-1">Agentic Minutes of Meeting</p>
+              </div>
             </div>
             <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white">
               <XMarkIcon className="w-6 h-6" />
